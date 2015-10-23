@@ -6,6 +6,9 @@ var gulp = require('gulp');
 // Load all gulp plugins automatically
 // and attach them to the `plugins` object
 var plugins = require('gulp-load-plugins')();
+var browserSync = require('browser-sync');
+var sass = require('gulp-sass');
+var autoprefixer = require('gulp-autoprefixer');
 
 // Temporary solution until gulp 4
 // https://github.com/gulpjs/gulp/issues/355
@@ -147,6 +150,31 @@ gulp.task('lint:js', function () {
       .pipe(plugins.jshint())
       .pipe(plugins.jshint.reporter('jshint-stylish'))
       .pipe(plugins.jshint.reporter('fail'));
+});
+
+gulp.task('serve', function() {
+
+    browserSync.init({
+        server: {
+            baseDir: "src/"
+        }
+    });
+
+    gulp.watch("src/scss/**/*.scss", ['sass']);
+    gulp.watch("src/css/*.css").on('change', browserSync.reload);
+});
+
+gulp.task('sass', function() {
+    return gulp.src("src/scss/*.scss")
+        .pipe(plugins.sourcemaps.init())
+        .pipe(sass())
+        .pipe(plugins.autoprefixer({
+            browsers: ['last 2 versions'],
+            cascade: false
+        }))
+        .pipe(plugins.sourcemaps.write())
+        .pipe(gulp.dest("src/css"))
+        .pipe(browserSync.stream());
 });
 
 
